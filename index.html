@@ -70,7 +70,41 @@ header{background:var(--white);border-bottom:1px solid var(--border);position:st
 .feature-text .ft{font-size:13px;font-weight:600;color:var(--dark);}
 .feature-text .fs{font-size:11px;color:var(--muted);}
 
-/* PRODUCTS */
+/* PRODUCT DETAIL MODAL */
+.pd-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:250;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.pd-overlay.open{opacity:1;pointer-events:all;}
+.pd-modal{background:var(--white);border-radius:20px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;transform:scale(0.95);transition:transform 0.25s;display:flex;flex-direction:column;}
+.pd-overlay.open .pd-modal{transform:scale(1);}
+.pd-img{width:100%;height:260px;object-fit:cover;border-radius:20px 20px 0 0;background:var(--teal-xlight);display:flex;align-items:center;justify-content:center;font-size:80px;overflow:hidden;flex-shrink:0;}
+.pd-img img{width:100%;height:100%;object-fit:cover;}
+.pd-body{padding:24px;}
+.pd-category{font-size:11px;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.pd-name{font-size:22px;font-weight:800;margin-bottom:10px;line-height:1.2;}
+.pd-desc{font-size:14px;color:var(--mid);line-height:1.6;margin-bottom:20px;}
+.pd-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.pd-price{font-size:28px;font-weight:800;}
+.pd-price span{font-size:14px;font-weight:400;color:var(--mid);}
+.pd-add-btn{background:var(--teal);color:white;border:none;border-radius:11px;padding:12px 24px;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:background 0.2s;}
+.pd-add-btn:hover{background:var(--teal-dark);}
+.pd-add-btn.added{background:#059669;}
+.pd-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.45);border:none;color:white;font-size:28px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;z-index:2;}
+.pd-arrow:hover{background:rgba(0,0,0,0.7);}
+.pd-prev{left:10px;}
+.pd-next{right:10px;}
+.pd-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:2;}
+.pd-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;transition:background 0.2s;}
+.pd-dot.active{background:white;}
+.pd-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.4);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;z-index:3;}
+.pd-img-wrap{position:relative;}
+@media(max-width:640px){
+  .pd-modal{border-radius:16px 16px 0 0;max-height:95vh;align-self:flex-end;}
+  .pd-overlay{align-items:flex-end;padding:0;}
+  .pd-img{height:200px;border-radius:16px 16px 0 0;}
+}
+.cat-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;}
+.cat-tab{padding:8px 18px;border-radius:100px;border:1.5px solid var(--border);background:var(--white);font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;color:var(--mid);cursor:pointer;transition:all 0.2s;}
+.cat-tab:hover{border-color:var(--teal);color:var(--teal);}
+.cat-tab.active{background:var(--teal);border-color:var(--teal);color:white;}
 .section{max-width:1280px;margin:0 auto;padding:48px 20px;}
 .section-title{font-size:28px;font-weight:800;color:var(--dark);}
 .section-sub{font-size:14px;color:var(--mid);margin-top:4px;}
@@ -278,6 +312,7 @@ footer{background:var(--dark);color:white;padding:44px 20px 28px;}
   <h2 class="section-title">Our Products</h2>
   <p class="section-sub">All prices in Qatari Riyal (QAR)</p>
   <div class="divider"></div>
+  <div class="cat-tabs" id="catTabs"></div>
   <div class="products-grid" id="productsGrid"></div>
   <div class="no-results" id="noResults" style="display:none"><div class="no-results-icon">🔍</div><p>No products found.</p></div>
 </section>
@@ -302,6 +337,11 @@ footer{background:var(--dark);color:white;padding:44px 20px 28px;}
     <div class="footer-bottom"><span>© 2025 Q-Mart. All rights reserved.</span><span>Doha, Qatar · +974 7084 0814</span></div>
   </div>
 </footer>
+
+<!-- PRODUCT DETAIL MODAL -->
+<div class="pd-overlay" id="pdOverlay" onclick="closePD(event)">
+  <div class="pd-modal" id="pdModal"></div>
+</div>
 
 <!-- CART -->
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
@@ -361,10 +401,26 @@ async function loadProducts(){
     const text=await res.text();
     PRODUCTS=parseCSV(text);
     if(!PRODUCTS.length)throw new Error("empty");
+    renderCategoryTabs();
     renderProducts();
   }catch(e){
     grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted)"><div style="font-size:32px;margin-bottom:12px">⚠️</div><p>Could not load products. Please try again later.</p></div>`;
   }
+}
+
+let currentCategory="All";
+
+function renderCategoryTabs(){
+  const cats=["All",...new Set(PRODUCTS.map(p=>p.category).filter(Boolean))];
+  const tabs=document.getElementById("catTabs");
+  if(!tabs)return;
+  tabs.innerHTML=cats.map(c=>`<button class="cat-tab${c===currentCategory?" active":""}" onclick="setCategory('${c}')">${c}</button>`).join("");
+}
+
+function setCategory(cat){
+  currentCategory=cat;
+  renderCategoryTabs();
+  renderProducts();
 }
 
 function filterProducts(q){
@@ -377,15 +433,16 @@ function filterProducts(q){
 function renderProducts(){
   const grid=document.getElementById("productsGrid");
   const noRes=document.getElementById("noResults");
-  const filtered=PRODUCTS.filter(p=>
-    p.name.toLowerCase().includes(currentFilter)||
+  let filtered=PRODUCTS.filter(p=>
+    (currentCategory==="All"||p.category===currentCategory)&&
+    (p.name.toLowerCase().includes(currentFilter)||
     p.category.toLowerCase().includes(currentFilter)||
-    p.desc.toLowerCase().includes(currentFilter)
+    p.desc.toLowerCase().includes(currentFilter))
   );
   if(!filtered.length){grid.innerHTML="";noRes.style.display="";return;}
   noRes.style.display="none";
   grid.innerHTML=filtered.map(p=>`
-    <div class="product-card">
+    <div class="product-card" onclick="openPD(${p.id})" style="cursor:pointer;">
       <div class="product-img">${getImageHTML(p)}<span class="product-badge">${p.category}</span></div>
       <div class="product-body">
         <div class="product-category">${p.category}</div>
@@ -393,10 +450,69 @@ function renderProducts(){
         <div class="product-desc">${p.desc}</div>
         <div class="product-footer">
           <div class="product-price">QAR ${p.price}<span>/unit</span></div>
-          <button class="add-btn" onclick="addToCart(${p.id})" id="btn-${p.id}">Add to Cart</button>
+          <button class="add-btn" onclick="event.stopPropagation();addToCart(${p.id})" id="btn-${p.id}">Add to Cart</button>
         </div>
       </div>
     </div>`).join("");
+}
+
+function gdUrl(url){
+  const m=url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return m?`https://drive.google.com/thumbnail?id=${m[1]}&sz=w600`:url;
+}
+
+let pdImgs=[],pdIdx=0;
+
+function openPD(id){
+  const p=PRODUCTS.find(x=>x.id===id);
+  if(!p)return;
+  pdImgs=p.image?p.image.split(",").map(s=>s.trim()).filter(Boolean):[];
+  pdIdx=0;
+  document.getElementById("pdModal").innerHTML=`
+    <div class="pd-img-wrap">
+      <div class="pd-img" id="pdImgBox">${renderSlide()}</div>
+      <button class="pd-close" onclick="closePD()">×</button>
+      ${pdImgs.length>1?`
+        <button class="pd-arrow pd-prev" onclick="slideImg(-1)">&#8249;</button>
+        <button class="pd-arrow pd-next" onclick="slideImg(1)">&#8250;</button>
+        <div class="pd-dots" id="pdDots">${pdImgs.map((_,i)=>`<span class="pd-dot${i===0?' active':''}" onclick="goSlide(${i})"></span>`).join("")}</div>
+      `:""}
+    </div>
+    <div class="pd-body">
+      <div class="pd-category">${p.category}</div>
+      <div class="pd-name">${p.name}</div>
+      <div class="pd-desc">${p.desc}</div>
+      <div class="pd-footer">
+        <div class="pd-price">QAR ${p.price}<span> /unit</span></div>
+        <button class="pd-add-btn" id="pd-btn-${p.id}" onclick="addToCartPD(${p.id})">Add to Cart</button>
+      </div>
+    </div>`;
+  document.getElementById("pdOverlay").classList.add("open");
+  document.body.style.overflow="hidden";
+}
+
+function renderSlide(){
+  if(!pdImgs.length)return`<span style="font-size:80px">📦</span>`;
+  return`<img src="${gdUrl(pdImgs[pdIdx])}" alt="product" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='';this.parentElement.innerHTML='<span style=font-size:80px>📦</span>'">`;
+}
+
+function slideImg(dir){
+  pdIdx=(pdIdx+dir+pdImgs.length)%pdImgs.length;
+  document.getElementById("pdImgBox").innerHTML=renderSlide();
+  document.querySelectorAll(".pd-dot").forEach((d,i)=>d.classList.toggle("active",i===pdIdx));
+}
+
+function goSlide(i){pdIdx=i;slideImg(0);}
+
+function closePD(e){
+  if(e&&e.target!==document.getElementById("pdOverlay"))return;
+  document.getElementById("pdOverlay").classList.remove("open");
+  document.body.style.overflow="";
+}
+function addToCartPD(id){
+  addToCart(id);
+  const btn=document.getElementById("pd-btn-"+id);
+  if(btn){btn.textContent="Added ✓";btn.classList.add("added");setTimeout(()=>{btn.textContent="Add to Cart";btn.classList.remove("added");},1200);}
 }
 
 function addToCart(id){
