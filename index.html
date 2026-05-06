@@ -481,6 +481,13 @@ function renderProducts(){
     </div>`).join("");
 }
 
+function formatDesc(desc){
+  if(!desc)return"No description available.";
+  if(!desc.includes("|"))return`<p>${desc}</p>`;
+  const parts=desc.split("|").map(s=>s.trim()).filter(Boolean);
+  return`<p style="margin-bottom:10px">${parts[0]}</p><ul style="list-style:none;padding:0;margin:0;">${parts.slice(1).map(p=>`<li style="display:flex;gap:8px;align-items:flex-start;padding:4px 0;font-size:14px;"><span style="color:var(--teal);font-size:16px;flex-shrink:0;">✓</span>${p}</li>`).join("")}</ul>`;
+}
+
 function gdUrl(url){
   const m=url.match(/\/d\/([a-zA-Z0-9_-]+)/);
   return m?`https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`:url;
@@ -518,7 +525,7 @@ function openPD(id){
       <span>💵</span> Cash on Delivery — Pay when you receive
     </div>
     <div class="pv-desc-title">Description</div>
-    <div class="pv-desc">${p.desc||"No description available."}</div>
+    <div class="pv-desc">${formatDesc(p.desc)}</div>
     <div class="pv-qty-row">
       <span class="pv-qty-label">Quantity</span>
       <div class="pv-qty-ctrl">
