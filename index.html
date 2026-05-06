@@ -493,7 +493,7 @@ function openPD(id){
 
 function renderSlide(){
   if(!pdImgs.length)return`<span style="font-size:80px">📦</span>`;
-  return`<img src="${gdUrl(pdImgs[pdIdx])}" alt="product" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='';this.parentElement.innerHTML='<span style=font-size:80px>📦</span>'">`;
+  return`<img src="${gdUrl(pdImgs[pdIdx])}" alt="product" style="width:100%;height:100%;object-fit:contain;background:#f0fdfa;" onerror="this.src='';this.parentElement.innerHTML='<span style=font-size:80px>📦</span>'">`;
 }
 
 function slideImg(dir){
