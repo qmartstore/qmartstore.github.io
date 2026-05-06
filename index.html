@@ -472,7 +472,7 @@ function renderProducts(){
       <div class="product-body">
         <div class="product-category">${p.category}</div>
         <div class="product-name">${p.name}</div>
-        <div class="product-desc">${(p.desc||"").split("|")[0].trim()}</div>
+        <div class="product-desc">${(p.desc||"").split("|")[0].trim().slice(0,50)}${(p.desc||"").length>50?"...":""}</div>
         <div class="product-footer">
           <div class="product-price">QAR ${p.price}<span>/unit</span></div>
           <button class="add-btn" onclick="event.stopPropagation();addToCart(${p.id})" id="btn-${p.id}">Add to Cart</button>
