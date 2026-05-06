@@ -70,36 +70,48 @@ header{background:var(--white);border-bottom:1px solid var(--border);position:st
 .feature-text .ft{font-size:13px;font-weight:600;color:var(--dark);}
 .feature-text .fs{font-size:11px;color:var(--muted);}
 
-/* PRODUCT DETAIL MODAL */
-.pd-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:250;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.25s;}
-.pd-overlay.open{opacity:1;pointer-events:all;}
-.pd-modal{background:var(--white);border-radius:20px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto;transform:scale(0.95);transition:transform 0.25s;display:flex;flex-direction:column;}
-.pd-overlay.open .pd-modal{transform:scale(1);}
-.pd-img{width:100%;height:260px;object-fit:cover;border-radius:20px 20px 0 0;background:var(--teal-xlight);display:flex;align-items:center;justify-content:center;font-size:80px;overflow:hidden;flex-shrink:0;}
-.pd-img img{width:100%;height:100%;object-fit:cover;}
-.pd-body{padding:24px;}
-.pd-category{font-size:11px;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
-.pd-name{font-size:22px;font-weight:800;margin-bottom:10px;line-height:1.2;}
-.pd-desc{font-size:14px;color:var(--mid);line-height:1.6;margin-bottom:20px;}
-.pd-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-.pd-price{font-size:28px;font-weight:800;}
-.pd-price span{font-size:14px;font-weight:400;color:var(--mid);}
-.pd-add-btn{background:var(--teal);color:white;border:none;border-radius:11px;padding:12px 24px;font-family:"DM Sans",sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:background 0.2s;}
-.pd-add-btn:hover{background:var(--teal-dark);}
-.pd-add-btn.added{background:#059669;}
-.pd-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.45);border:none;color:white;font-size:28px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;z-index:2;}
-.pd-arrow:hover{background:rgba(0,0,0,0.7);}
-.pd-prev{left:10px;}
-.pd-next{right:10px;}
-.pd-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:2;}
-.pd-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.5);cursor:pointer;transition:background 0.2s;}
-.pd-dot.active{background:white;}
-.pd-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.4);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;z-index:3;}
-.pd-img-wrap{position:relative;}
-@media(max-width:640px){
-  .pd-modal{border-radius:16px 16px 0 0;max-height:95vh;align-self:flex-end;}
-  .pd-overlay{align-items:flex-end;padding:0;}
-  .pd-img{height:200px;border-radius:16px 16px 0 0;}
+/* PRODUCT FULL PAGE */
+.pv-page{position:fixed;inset:0;background:var(--bg);z-index:250;overflow-y:auto;transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);}
+.pv-page.open{transform:translateX(0);}
+.pv-header{background:var(--white);border-bottom:1px solid var(--border);padding:0 20px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+.pv-back{background:none;border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--dark);transition:background 0.2s;}
+.pv-back:hover{background:var(--bg);}
+.pv-header-title{font-size:15px;font-weight:600;color:var(--mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pv-inner{max-width:1100px;margin:0 auto;padding:32px 20px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+/* LEFT: image slider */
+.pv-slider{position:relative;}
+.pv-main-img{width:100%;aspect-ratio:1/1;background:var(--teal-xlight);border-radius:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:80px;margin-bottom:12px;position:relative;}
+.pv-main-img img{width:100%;height:100%;object-fit:contain;}
+.pv-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);border:none;color:white;font-size:26px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;z-index:2;}
+.pv-arrow:hover{background:rgba(0,0,0,0.65);}
+.pv-prev{left:12px;}.pv-next{right:12px;}
+.pv-thumbs{display:flex;gap:8px;flex-wrap:wrap;}
+.pv-thumb{width:68px;height:68px;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;background:var(--teal-xlight);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;transition:border-color 0.2s;}
+.pv-thumb.active{border-color:var(--teal);}
+.pv-thumb img{width:100%;height:100%;object-fit:contain;}
+/* RIGHT: details */
+.pv-details{}
+.pv-category{font-size:11px;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.pv-name{font-size:28px;font-weight:800;line-height:1.2;margin-bottom:16px;}
+.pv-price-row{display:flex;align-items:baseline;gap:8px;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border);}
+.pv-price{font-size:36px;font-weight:800;color:var(--dark);}
+.pv-price-unit{font-size:14px;color:var(--muted);}
+.pv-desc-title{font-size:12px;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+.pv-desc{font-size:15px;color:var(--mid);line-height:1.7;margin-bottom:28px;}
+.pv-cod{background:var(--teal-xlight);border:1.5px solid var(--teal-light);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;margin-bottom:24px;font-size:13px;font-weight:600;color:var(--teal-dark);}
+.pv-qty-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.pv-qty-label{font-size:13px;font-weight:600;color:var(--mid);}
+.pv-qty-ctrl{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:10px;padding:4px 8px;border:1.5px solid var(--border);}
+.pv-qty-btn{background:none;border:none;cursor:pointer;font-size:20px;font-weight:600;color:var(--dark);width:28px;height:28px;display:flex;align-items:center;justify-content:center;line-height:1;}
+.pv-qty-val{font-size:16px;font-weight:700;min-width:28px;text-align:center;}
+.pv-add-btn{width:100%;background:var(--teal);color:white;border:none;border-radius:12px;padding:16px;font-family:"DM Sans",sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.pv-add-btn:hover{background:var(--teal-dark);}
+.pv-add-btn.added{background:#059669;}
+@media(max-width:760px){
+  .pv-inner{grid-template-columns:1fr;gap:24px;padding:20px 16px;}
+  .pv-name{font-size:22px;}
+  .pv-price{font-size:28px;}
+  .pv-thumb{width:56px;height:56px;}
 }
 .cat-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;}
 .cat-tab{padding:8px 18px;border-radius:100px;border:1.5px solid var(--border);background:var(--white);font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;color:var(--mid);cursor:pointer;transition:all 0.2s;}
@@ -338,9 +350,22 @@ footer{background:var(--dark);color:white;padding:44px 20px 28px;}
   </div>
 </footer>
 
-<!-- PRODUCT DETAIL MODAL -->
-<div class="pd-overlay" id="pdOverlay" onclick="closePD(event)">
-  <div class="pd-modal" id="pdModal"></div>
+<!-- PRODUCT FULL PAGE VIEW -->
+<div class="pv-page" id="pvPage">
+  <div class="pv-header">
+    <button class="pv-back" onclick="closePV()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back
+    </button>
+    <span class="pv-header-title" id="pvHeaderTitle"></span>
+  </div>
+  <div class="pv-inner">
+    <div class="pv-slider">
+      <div class="pv-main-img" id="pvMainImg"></div>
+      <div class="pv-thumbs" id="pvThumbs"></div>
+    </div>
+    <div class="pv-details" id="pvDetails"></div>
+  </div>
 </div>
 
 <!-- CART -->
@@ -458,61 +483,95 @@ function renderProducts(){
 
 function gdUrl(url){
   const m=url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  return m?`https://drive.google.com/thumbnail?id=${m[1]}&sz=w600`:url;
+  return m?`https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`:url;
 }
 
-let pdImgs=[],pdIdx=0;
+let pvImgs=[],pvIdx=0,pvProductId=null;
 
 function openPD(id){
   const p=PRODUCTS.find(x=>x.id===id);
   if(!p)return;
-  pdImgs=p.image?p.image.split(",").map(s=>s.trim()).filter(Boolean):[];
-  pdIdx=0;
-  document.getElementById("pdModal").innerHTML=`
-    <div class="pd-img-wrap">
-      <div class="pd-img" id="pdImgBox">${renderSlide()}</div>
-      <button class="pd-close" onclick="closePD()">×</button>
-      ${pdImgs.length>1?`
-        <button class="pd-arrow pd-prev" onclick="slideImg(-1)">&#8249;</button>
-        <button class="pd-arrow pd-next" onclick="slideImg(1)">&#8250;</button>
-        <div class="pd-dots" id="pdDots">${pdImgs.map((_,i)=>`<span class="pd-dot${i===0?' active':''}" onclick="goSlide(${i})"></span>`).join("")}</div>
-      `:""}
+  pvProductId=id;
+  pvImgs=p.image?p.image.split(",").map(s=>s.trim()).filter(Boolean):[];
+  pvIdx=0;
+  document.getElementById("pvHeaderTitle").textContent=p.name;
+  renderPVSlide();
+  // thumbs
+  const thumbsEl=document.getElementById("pvThumbs");
+  if(pvImgs.length>1){
+    thumbsEl.innerHTML=pvImgs.map((img,i)=>`
+      <div class="pv-thumb${i===0?" active":""}" onclick="goThumb(${i})">
+        <img src="${gdUrl(img)}" alt="" onerror="this.parentElement.innerHTML='📦'">
+      </div>`).join("");
+  } else {
+    thumbsEl.innerHTML="";
+  }
+  // details
+  document.getElementById("pvDetails").innerHTML=`
+    <div class="pv-category">${p.category}</div>
+    <div class="pv-name">${p.name}</div>
+    <div class="pv-price-row">
+      <div class="pv-price">QAR ${p.price}</div>
+      <div class="pv-price-unit">per unit</div>
     </div>
-    <div class="pd-body">
-      <div class="pd-category">${p.category}</div>
-      <div class="pd-name">${p.name}</div>
-      <div class="pd-desc">${p.desc}</div>
-      <div class="pd-footer">
-        <div class="pd-price">QAR ${p.price}<span> /unit</span></div>
-        <button class="pd-add-btn" id="pd-btn-${p.id}" onclick="addToCartPD(${p.id})">Add to Cart</button>
+    <div class="pv-cod">
+      <span>💵</span> Cash on Delivery — Pay when you receive
+    </div>
+    <div class="pv-desc-title">Description</div>
+    <div class="pv-desc">${p.desc||"No description available."}</div>
+    <div class="pv-qty-row">
+      <span class="pv-qty-label">Quantity</span>
+      <div class="pv-qty-ctrl">
+        <button class="pv-qty-btn" onclick="pvQty(-1)">−</button>
+        <span class="pv-qty-val" id="pvQtyVal">1</span>
+        <button class="pv-qty-btn" onclick="pvQty(1)">+</button>
       </div>
-    </div>`;
-  document.getElementById("pdOverlay").classList.add("open");
+    </div>
+    <button class="pv-add-btn" id="pvAddBtn" onclick="addToCartPV()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Add to Cart
+    </button>`;
+  document.getElementById("pvPage").classList.add("open");
   document.body.style.overflow="hidden";
+  window._pvQty=1;
 }
 
-function renderSlide(){
-  if(!pdImgs.length)return`<span style="font-size:80px">📦</span>`;
-  return`<img src="${gdUrl(pdImgs[pdIdx])}" alt="product" style="width:100%;height:100%;object-fit:contain;background:#f0fdfa;" onerror="this.src='';this.parentElement.innerHTML='<span style=font-size:80px>📦</span>'">`;
+function renderPVSlide(){
+  const box=document.getElementById("pvMainImg");
+  const arrowsHtml=pvImgs.length>1?`
+    <button class="pv-arrow pv-prev" onclick="pvSlide(-1)">&#8249;</button>
+    <button class="pv-arrow pv-next" onclick="pvSlide(1)">&#8250;</button>`:""
+  if(!pvImgs.length){box.innerHTML=`<span style="font-size:80px">📦</span>`;return;}
+  box.innerHTML=`${arrowsHtml}<img src="${gdUrl(pvImgs[pvIdx])}" alt="product" style="width:100%;height:100%;object-fit:contain;" onerror="this.src='';this.parentElement.innerHTML='<span style=font-size:80px>📦</span>'">`;
 }
 
-function slideImg(dir){
-  pdIdx=(pdIdx+dir+pdImgs.length)%pdImgs.length;
-  document.getElementById("pdImgBox").innerHTML=renderSlide();
-  document.querySelectorAll(".pd-dot").forEach((d,i)=>d.classList.toggle("active",i===pdIdx));
+function pvSlide(dir){
+  pvIdx=(pvIdx+dir+pvImgs.length)%pvImgs.length;
+  renderPVSlide();
+  document.querySelectorAll(".pv-thumb").forEach((t,i)=>t.classList.toggle("active",i===pvIdx));
 }
 
-function goSlide(i){pdIdx=i;slideImg(0);}
+function goThumb(i){pvIdx=i;renderPVSlide();document.querySelectorAll(".pv-thumb").forEach((t,j)=>t.classList.toggle("active",j===i));}
 
-function closePD(e){
-  if(e&&e.target!==document.getElementById("pdOverlay"))return;
-  document.getElementById("pdOverlay").classList.remove("open");
+function closePV(){
+  document.getElementById("pvPage").classList.remove("open");
   document.body.style.overflow="";
 }
-function addToCartPD(id){
-  addToCart(id);
-  const btn=document.getElementById("pd-btn-"+id);
-  if(btn){btn.textContent="Added ✓";btn.classList.add("added");setTimeout(()=>{btn.textContent="Add to Cart";btn.classList.remove("added");},1200);}
+
+function pvQty(d){
+  window._pvQty=Math.max(1,(window._pvQty||1)+d);
+  document.getElementById("pvQtyVal").textContent=window._pvQty;
+}
+
+function addToCartPV(){
+  const p=PRODUCTS.find(x=>x.id===pvProductId);
+  if(!p)return;
+  const qty=window._pvQty||1;
+  const ex=cart.find(x=>x.id===pvProductId);
+  if(ex)ex.qty+=qty;else cart.push({...p,qty});
+  updateCartUI();
+  const btn=document.getElementById("pvAddBtn");
+  if(btn){btn.textContent="Added ✓";btn.classList.add("added");setTimeout(()=>{btn.innerHTML='<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> Add to Cart';btn.classList.remove("added");},1500);}
 }
 
 function addToCart(id){
