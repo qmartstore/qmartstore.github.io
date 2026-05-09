@@ -6,6 +6,32 @@
 <title>Q-Mart — Your Trusted & Digital Market</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+.social-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #f1f1f1;
+            color: #333 !important;
+            padding: 5px 15px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .social-btn:hover {
+            background-color: #ddd;
+            transform: translateY(-2px);
+        }
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-top: 1px solid #333;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
 :root{
   --teal:#0d9488;--teal-dark:#0f766e;--teal-mid:#14b8a6;
   --teal-light:#ccfbf1;--teal-xlight:#f0fdfa;
@@ -339,15 +365,32 @@ footer{background:var(--dark);color:white;padding:44px 20px 28px;}
       </div>
       <div class="footer-contact">
         <h4>Contact Us</h4>
-        <div class="footer-contact-item">📞 <a href="tel:+97470840814" style="color:inherit;text-decoration:none;">+974 7084 0814</a></div>
+        <div class="footer-contact-item">
+          📞 <a href="tel:+97470840814" style="color:inherit;text-decoration:none;">+974 7084 0814</a>
+        </div>
         <div class="footer-contact-item">📍 Doha, Qatar</div>
         <div class="footer-contact-item">💬 WhatsApp Available</div>
         <div class="footer-contact-item">💵 Cash on Delivery Only</div>
       </div>
     </div>
-    <div class="footer-bottom"><span>© 2025 Q-Mart. All rights reserved.</span><span>Doha, Qatar · +974 7084 0814</span></div>
+	<div class="footer-bottom">
+  <span>© <span id="current-year"></span> Q-Mart. All rights reserved.</span>
+    <div style="display: flex; gap: 10px; align-items: center;">
+    <span style="font-size: 14px; font-weight: bold;">FOLLOW US:</span>
+    <a href="https://www.tiktok.com/@qmart.com.qa" class="social-btn">
+      <i class="fa-brands fa-tiktok"></i> TikTok
+    </a>
+    <a href="https://www.facebook.com/qmart.com.qa" class="social-btn">
+      <i class="fa-brands fa-facebook-f"></i> Facebook
+    </a>
   </div>
+</div>
 </footer>
+
+<script>
+  // Yeh script automatic saal change karega
+  document.getElementById("current-year").textContent = new Date().getFullYear();
+</script>
 
 <!-- PRODUCT FULL PAGE VIEW -->
 <div class="pv-page" id="pvPage">
