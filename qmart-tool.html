@@ -142,6 +142,41 @@ textarea { line-height: 1.6; resize: vertical; }
 .tip strong { color: var(--dark); }
 .pipe { color: var(--teal); font-weight: 700; font-family: monospace; }
 
+/* Custom category input */
+.custom-cat-wrap {
+  display: none; margin-top: 10px;
+  display: none; flex-direction: row; gap: 8px; align-items: center;
+}
+.custom-cat-wrap input {
+  flex: 1; padding: 10px 12px; font-size: 14px;
+}
+.custom-cat-wrap button {
+  background: var(--teal); color: white; border: none;
+  border-radius: 8px; padding: 10px 16px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+}
+.custom-cat-wrap button:hover { background: var(--teal-dark); }
+.custom-cat-wrap .cancel-btn {
+  background: none; border: 1.5px solid var(--border); color: var(--mid);
+}
+.custom-cat-wrap .cancel-btn:hover { background: var(--bg); }
+
+/* Suggested category edit */
+.suggested-edit-wrap {
+  display: none; margin-top: 10px; flex-direction: row; gap: 8px; align-items: center;
+}
+.suggested-edit-wrap input {
+  flex: 1; padding: 10px 12px; font-size: 14px;
+}
+.suggested-edit-wrap button {
+  background: var(--teal); color: white; border: none;
+  border-radius: 8px; padding: 10px 16px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+}
+.suggested-edit-wrap button:hover { background: var(--teal-dark); }
+
 /* Image uploader */
 .upload-zone {
   border: 2px dashed var(--border); border-radius: 12px;
@@ -250,7 +285,7 @@ textarea { line-height: 1.6; resize: vertical; }
     </div>
     <div>
       <label>Category</label>
-      <select id="productCategory">
+      <select id="productCategory" onchange="handleCategoryChange(this)">
         <option value="">— Select —</option>
         <option>Appliances</option>
         <option>Phones &amp; Accessories</option>
@@ -262,7 +297,14 @@ textarea { line-height: 1.6; resize: vertical; }
         <option>Clothing &amp; Fashion</option>
         <option>Food &amp; Grocery</option>
         <option>Other</option>
+        <option value="__custom__">+ Add Custom Category...</option>
       </select>
+      <!-- Custom category input -->
+      <div class="custom-cat-wrap" id="customCatWrap">
+        <input type="text" id="customCatInput" placeholder="Type new category name..." onkeydown="if(event.key==='Enter') saveCustomCategory()">
+        <button onclick="saveCustomCategory()">Save</button>
+        <button class="cancel-btn" onclick="cancelCustomCategory()">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -298,7 +340,16 @@ textarea { line-height: 1.6; resize: vertical; }
       <hr class="divider">
       <div class="result-label">Suggested Category</div>
       <div class="result-text" id="categoryText" style="font-size:15px;font-weight:700;color:var(--teal-dark);"></div>
-      <button class="copy-btn" onclick="applySuggestedCategory()" style="margin-top:8px;">Use this Category</button>
+      <!-- Suggested category action buttons -->
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <button class="copy-btn" onclick="applySuggestedCategory()" style="margin-top:0;">Use this Category</button>
+        <button class="copy-btn" onclick="toggleSuggestedEdit()" style="margin-top:0;background:var(--mid);" id="editSuggestedBtn">Edit</button>
+      </div>
+      <!-- Suggested category edit inline -->
+      <div class="suggested-edit-wrap" id="suggestedEditWrap" style="display:none;margin-top:10px;flex-direction:row;gap:8px;align-items:center;">
+        <input type="text" id="suggestedEditInput" placeholder="Edit category name..." onkeydown="if(event.key==='Enter') saveSuggestedEdit()">
+        <button onclick="saveSuggestedEdit()">Save</button>
+      </div>
     </div>
 
     <!-- manual desc edit area -->
@@ -387,6 +438,77 @@ let selectedFiles = [];
 let uploadedLinks = [];
 let formattedDesc = '';
 let suggestedCategory = '';
+let previousCategoryValue = '';
+
+// ── CUSTOM CATEGORY ──────────────────────────────────────────
+function handleCategoryChange(sel) {
+  if (sel.value === '__custom__') {
+    previousCategoryValue = '';
+    document.getElementById('customCatWrap').style.display = 'flex';
+    document.getElementById('customCatInput').focus();
+    sel.value = '';
+  } else {
+    document.getElementById('customCatWrap').style.display = 'none';
+  }
+}
+
+function saveCustomCategory() {
+  const val = document.getElementById('customCatInput').value.trim();
+  if (!val) return;
+  const sel = document.getElementById('productCategory');
+  // Add before the last option (+ Add Custom...)
+  const customOpt = sel.querySelector('option[value="__custom__"]');
+  const newOpt = document.createElement('option');
+  newOpt.value = val;
+  newOpt.textContent = val;
+  sel.insertBefore(newOpt, customOpt);
+  sel.value = val;
+  document.getElementById('customCatInput').value = '';
+  document.getElementById('customCatWrap').style.display = 'none';
+}
+
+function cancelCustomCategory() {
+  document.getElementById('customCatInput').value = '';
+  document.getElementById('customCatWrap').style.display = 'none';
+  document.getElementById('productCategory').value = previousCategoryValue;
+}
+
+// ── SUGGESTED CATEGORY EDIT ──────────────────────────────────
+function toggleSuggestedEdit() {
+  const wrap = document.getElementById('suggestedEditWrap');
+  const isOpen = wrap.style.display === 'flex';
+  if (isOpen) {
+    wrap.style.display = 'none';
+  } else {
+    document.getElementById('suggestedEditInput').value = suggestedCategory;
+    wrap.style.display = 'flex';
+    document.getElementById('suggestedEditInput').focus();
+  }
+}
+
+function saveSuggestedEdit() {
+  const val = document.getElementById('suggestedEditInput').value.trim();
+  if (!val) return;
+  suggestedCategory = val;
+  document.getElementById('categoryText').textContent = val;
+  document.getElementById('suggestedEditWrap').style.display = 'none';
+}
+
+function applySuggestedCategory() {
+  if (!suggestedCategory) return;
+  const sel = document.getElementById('productCategory');
+  // Check if already exists
+  for (const opt of sel.options) {
+    if (opt.value === suggestedCategory) { sel.value = suggestedCategory; return; }
+  }
+  // Add it as new option
+  const customOpt = sel.querySelector('option[value="__custom__"]');
+  const newOpt = document.createElement('option');
+  newOpt.value = suggestedCategory;
+  newOpt.textContent = suggestedCategory;
+  sel.insertBefore(newOpt, customOpt);
+  sel.value = suggestedCategory;
+}
 
 // ── GOOGLE AUTH ──────────────────────────────────────────────
 function handleAuth() {
@@ -502,9 +624,13 @@ async function uploadAll() {
   }
 
   let done = 0;
+  const orderedIndices = [];
   for (let i = 0; i < selectedFiles.length; i++) {
+    if (selectedFiles[i] !== null) orderedIndices.push(i);
+  }
+
+  for (const i of orderedIndices) {
     const f = selectedFiles[i];
-    if (!f) continue;
     const statusEl = document.getElementById('status-' + i);
     if (statusEl) { statusEl.textContent = 'Uploading...'; statusEl.className = 'img-status'; }
     try {
@@ -515,9 +641,9 @@ async function uploadAll() {
     } catch(e) {
       if (statusEl) { statusEl.textContent = 'Failed'; statusEl.className = 'img-status err'; }
     }
-    const pct = Math.round((done / files.length) * 100);
+    const pct = Math.round((done / orderedIndices.length) * 100);
     progressFill.style.width = pct + '%';
-    progressText.textContent = done + ' of ' + files.length + ' uploaded';
+    progressText.textContent = done + ' of ' + orderedIndices.length + ' uploaded';
   }
 
   document.getElementById('uploadBtn').disabled = false;
@@ -531,13 +657,11 @@ async function uploadAll() {
 }
 
 async function getOrCreateFolder() {
-  // search for existing folder
   const search = await gdriveRequest('GET',
     `https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)`
   );
   if (search.files && search.files.length > 0) return search.files[0].id;
 
-  // create folder
   const created = await gdriveRequest('POST', 'https://www.googleapis.com/drive/v3/files', {
     name: FOLDER_NAME,
     mimeType: 'application/vnd.google-apps.folder'
@@ -546,7 +670,6 @@ async function getOrCreateFolder() {
 }
 
 async function uploadFile(file) {
-  // multipart upload
   const meta = { name: file.name, parents: [folderId] };
   const boundary = 'qmart_boundary_' + Date.now();
   const metaStr = JSON.stringify(meta);
@@ -577,7 +700,6 @@ async function uploadFile(file) {
   const data = await resp.json();
   const fileId = data.id;
 
-  // make public
   await gdriveRequest('POST', `https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
     role: 'reader', type: 'anyone'
   });
@@ -614,6 +736,7 @@ function clearDesc() {
   document.getElementById('descResult').style.display = 'none';
   document.getElementById('descError').style.display = 'none';
   document.getElementById('descEditArea').style.display = 'none';
+  document.getElementById('suggestedEditWrap').style.display = 'none';
   formattedDesc = '';
   suggestedCategory = '';
 }
@@ -630,14 +753,6 @@ function saveDescEdit() {
   document.getElementById('descEditArea').style.display = 'none';
 }
 
-function applySuggestedCategory() {
-  if (!suggestedCategory) return;
-  const sel = document.getElementById('productCategory');
-  for (const opt of sel.options) {
-    if (opt.value === suggestedCategory) { sel.value = suggestedCategory; return; }
-  }
-}
-
 async function formatDesc() {
   const input = document.getElementById('inputDesc').value.trim();
   if (!input) { showDescError('Paste a description first.'); return; }
@@ -648,6 +763,7 @@ async function formatDesc() {
   loading.style.display = 'flex';
   document.getElementById('descError').style.display = 'none';
   document.getElementById('descResult').style.display = 'none';
+  document.getElementById('suggestedEditWrap').style.display = 'none';
 
   const systemPrompt = `You are a product description formatter for Q-Mart, Doha, Qatar.
 
