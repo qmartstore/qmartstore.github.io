@@ -256,6 +256,9 @@ textarea { line-height: 1.6; resize: vertical; }
 .progress-bar-bg { background: var(--border); border-radius: 99px; height: 6px; }
 .progress-bar-fill { background: var(--teal); height: 6px; border-radius: 99px; width: 0%; transition: width 0.3s; }
 .progress-text { font-size: 12px; color: var(--mid); margin-top: 6px; }
+.preview-item.dragging { opacity: 0.4; border-color: var(--teal); }
+.preview-item.drag-over { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-light); }
+.reorder-hint { font-size: 12px; color: var(--muted); margin-top: 8px; display: none; }
 </style>
 </head>
 <body>
@@ -377,6 +380,7 @@ textarea { line-height: 1.6; resize: vertical; }
     <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="handleFiles(this.files)">
 
     <div class="preview-grid" id="previewGrid"></div>
+    <div class="reorder-hint" id="reorderHint">Drag images to reorder before uploading</div>
 
     <div class="progress-bar-wrap" id="progressWrap">
       <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
@@ -550,6 +554,7 @@ function handleFiles(files) {
   if (selectedFiles.length > 0) {
     document.getElementById('uploadBtn').style.display = 'inline-flex';
     document.getElementById('clearImgBtn').style.display = 'inline-flex';
+    document.getElementById('reorderHint').style.display = 'block';
   }
 }
 
@@ -558,6 +563,54 @@ function addPreview(file, idx) {
   const div = document.createElement('div');
   div.className = 'preview-item';
   div.id = 'preview-' + idx;
+  div.draggable = true;
+  div.dataset.idx = String(idx);
+
+  div.addEventListener('dragstart', (e) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', div.dataset.idx);
+    div.classList.add('dragging');
+  });
+  div.addEventListener('dragend', () => div.classList.remove('dragging'));
+  div.addEventListener('dragover', (e) => { e.preventDefault(); div.classList.add('drag-over'); });
+  div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+  div.addEventListener('drop', (e) => {
+    e.preventDefault();
+    div.classList.remove('drag-over');
+    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+    const toIdx = parseInt(div.dataset.idx);
+    if (fromIdx === toIdx) return;
+
+    // swap in selectedFiles array
+    [selectedFiles[fromIdx], selectedFiles[toIdx]] = [selectedFiles[toIdx], selectedFiles[fromIdx]];
+
+    // swap DOM nodes
+    const fromEl = document.getElementById('preview-' + fromIdx);
+    const toEl = document.getElementById('preview-' + toIdx);
+    const fromNext = fromEl.nextSibling;
+    const toNext = toEl.nextSibling;
+    if (fromNext === toEl) {
+      grid.insertBefore(toEl, fromEl);
+    } else if (toNext === fromEl) {
+      grid.insertBefore(fromEl, toEl);
+    } else {
+      grid.insertBefore(fromEl, toNext);
+      grid.insertBefore(toEl, fromNext);
+    }
+
+    // swap ids and dataset
+    fromEl.id = 'preview-' + toIdx;
+    fromEl.dataset.idx = String(toIdx);
+    toEl.id = 'preview-' + fromIdx;
+    toEl.dataset.idx = String(fromIdx);
+
+    // swap status ids
+    const fromStatus = document.getElementById('status-' + fromIdx);
+    const toStatus = document.getElementById('status-' + toIdx);
+    if (fromStatus) fromStatus.id = 'status-' + toIdx;
+    if (toStatus) toStatus.id = 'status-' + fromIdx;
+  });
+
   const img = document.createElement('img');
   img.src = URL.createObjectURL(file);
   const rm = document.createElement('button');
@@ -592,6 +645,7 @@ function clearImages() {
   document.getElementById('imgResult').style.display = 'none';
   document.getElementById('progressWrap').style.display = 'none';
   document.getElementById('imgError').style.display = 'none';
+  document.getElementById('reorderHint').style.display = 'none';
 }
 
 // drag and drop
@@ -624,13 +678,9 @@ async function uploadAll() {
   }
 
   let done = 0;
-  const orderedIndices = [];
   for (let i = 0; i < selectedFiles.length; i++) {
-    if (selectedFiles[i] !== null) orderedIndices.push(i);
-  }
-
-  for (const i of orderedIndices) {
     const f = selectedFiles[i];
+    if (!f) continue;
     const statusEl = document.getElementById('status-' + i);
     if (statusEl) { statusEl.textContent = 'Uploading...'; statusEl.className = 'img-status'; }
     try {
@@ -641,9 +691,9 @@ async function uploadAll() {
     } catch(e) {
       if (statusEl) { statusEl.textContent = 'Failed'; statusEl.className = 'img-status err'; }
     }
-    const pct = Math.round((done / orderedIndices.length) * 100);
+    const pct = Math.round((done / files.length) * 100);
     progressFill.style.width = pct + '%';
-    progressText.textContent = done + ' of ' + orderedIndices.length + ' uploaded';
+    progressText.textContent = done + ' of ' + files.length + ' uploaded';
   }
 
   document.getElementById('uploadBtn').disabled = false;
