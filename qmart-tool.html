@@ -682,14 +682,6 @@ async function uploadAll() {
   progressWrap.style.display = 'block';
   uploadedLinks = [];
 
-  try {
-    if (!folderId) folderId = await getOrCreateFolder();
-  } catch(e) {
-    showImgError('Could not access Drive folder: ' + e.message);
-    document.getElementById('uploadBtn').disabled = false;
-    return;
-  }
-
   let done = 0;
   for (let i = 0; i < selectedFiles.length; i++) {
     const f = selectedFiles[i];
@@ -724,34 +716,28 @@ async function getOrCreateFolder() {
 }
 
 async function uploadFile(file) {
-  const meta = { name: file.name, parents: [folderId] };
-  const boundary = 'qmart_boundary_' + Date.now();
-  const metaStr = JSON.stringify(meta);
-  const fileData = await readFileAsArrayBuffer(file);
+  const meta = { name: file.name, parents: [FOLDER_ID] };
 
-  const encoder = new TextEncoder();
-  const metaPart = encoder.encode(
-    '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + metaStr + '\r\n'
-  );
-  const filePart = encoder.encode('--' + boundary + '\r\nContent-Type: ' + file.type + '\r\n\r\n');
-  const endPart = encoder.encode('\r\n--' + boundary + '--');
-
-  const body = new Uint8Array(metaPart.length + filePart.length + fileData.byteLength + endPart.length);
-  body.set(metaPart, 0);
-  body.set(filePart, metaPart.length);
-  body.set(new Uint8Array(fileData), metaPart.length + filePart.length);
-  body.set(endPart, metaPart.length + filePart.length + fileData.byteLength);
-
-  const resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+  const initResp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer ' + accessToken,
-      'Content-Type': 'multipart/related; boundary=' + boundary
+      'Content-Type': 'application/json',
+      'X-Upload-Content-Type': file.type
     },
-    body
+    body: JSON.stringify(meta)
   });
-  if (!resp.ok) throw new Error('Upload failed');
-  const data = await resp.json();
+  if (!initResp.ok) throw new Error('Upload init failed');
+  const uploadUrl = initResp.headers.get('Location');
+
+  const fileData = await readFileAsArrayBuffer(file);
+  const uploadResp = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { 'Content-Type': file.type },
+    body: fileData
+  });
+  if (!uploadResp.ok) throw new Error('Upload failed');
+  const data = await uploadResp.json();
   const fileId = data.id;
 
   await gdriveRequest('POST', `https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
@@ -783,7 +769,6 @@ async function gdriveRequest(method, url, body) {
   }
   return resp.json();
 }
-
 // ── DESCRIPTION ──────────────────────────────────────────────
 function clearDesc() {
   document.getElementById('inputDesc').value = '';
