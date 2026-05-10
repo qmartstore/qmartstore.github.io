@@ -428,7 +428,8 @@ textarea { line-height: 1.6; resize: vertical; }
 const GROQ_API_KEY = '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';
 const GDRIVE_CLIENT_ID = '242818705775-t3nbu3pq1ml2ek35ss89mepdl22n3utr.apps.googleusercontent.com';
 const GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
-const FOLDER_NAME = 'QMart_Images';
+const FOLDER_NAME = 'Q-Mart Images';
+const FOLDER_ID = '1bnI1iQ-3eIsxttTBESo-xljUEIe4Fwza';
 
 let accessToken = null;
 let folderId = null;
@@ -719,16 +720,7 @@ async function uploadAll() {
 }
 
 async function getOrCreateFolder() {
-  const search = await gdriveRequest('GET',
-    `https://www.googleapis.com/drive/v3/files?q=name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)`
-  );
-  if (search.files && search.files.length > 0) return search.files[0].id;
-
-  const created = await gdriveRequest('POST', 'https://www.googleapis.com/drive/v3/files', {
-    name: FOLDER_NAME,
-    mimeType: 'application/vnd.google-apps.folder'
-  });
-  return created.id;
+  return FOLDER_ID;
 }
 
 async function uploadFile(file) {
