@@ -314,12 +314,6 @@ textarea { line-height: 1.6; resize: vertical; }
   <!-- STEP 2: DESCRIPTION -->
   <div class="section-title">Step 2 — Description</div>
   <div class="card">
-    <div class="tip" style="margin-bottom:16px;">
-      <strong>How it works:</strong> Paste raw description — AI formats it as:<br>
-      <span style="margin-top:6px;display:block;font-family:monospace;font-size:12px;color:var(--dark);">
-        Intro sentence <span class="pipe">|</span> Feature 1 <span class="pipe">|</span> Feature 2 <span class="pipe">|</span> Feature 3...
-      </span>
-    </div>
     <label>Raw Product Description</label>
     <textarea id="inputDesc" rows="8" placeholder="Paste your raw product description here — emojis, bullets, checkmarks, anything. AI will clean it up."></textarea>
     <div class="btn-row">
@@ -517,16 +511,32 @@ function applySuggestedCategory() {
 // ── GOOGLE AUTH ──────────────────────────────────────────────
 function handleAuth() {
   if (accessToken) { signOut(); return; }
+  requestNewToken();
+}
+
+function requestNewToken() {
   const client = google.accounts.oauth2.initTokenClient({
     client_id: GDRIVE_CLIENT_ID,
     scope: GDRIVE_SCOPE,
     callback: (resp) => {
       if (resp.error) { showImgError('Auth failed: ' + resp.error); return; }
       accessToken = resp.access_token;
+      const expiry = Date.now() + (resp.expires_in - 60) * 1000;
+      localStorage.setItem('qmart_token', resp.access_token);
+      localStorage.setItem('qmart_token_expiry', String(expiry));
       setAuthConnected();
     }
   });
   client.requestAccessToken();
+}
+
+function tryRestoreToken() {
+  const token = localStorage.getItem('qmart_token');
+  const expiry = parseInt(localStorage.getItem('qmart_token_expiry') || '0');
+  if (token && Date.now() < expiry) {
+    accessToken = token;
+    setAuthConnected();
+  }
 }
 
 function setAuthConnected() {
@@ -539,6 +549,8 @@ function signOut() {
   google.accounts.oauth2.revoke(accessToken, () => {});
   accessToken = null;
   folderId = null;
+  localStorage.removeItem('qmart_token');
+  localStorage.removeItem('qmart_token_expiry');
   document.getElementById('authDot').classList.remove('connected');
   document.getElementById('authText').textContent = 'Not connected to Google Drive';
   document.getElementById('authBtn').textContent = 'Connect';
@@ -815,6 +827,22 @@ async function formatDesc() {
   document.getElementById('descResult').style.display = 'none';
   document.getElementById('suggestedEditWrap').style.display = 'none';
 
+  const selectedCat = document.getElementById('productCategory').value.trim();
+  const categoryInstruction = selectedCat && selectedCat !== '__custom__'
+    ? `For "category": The user has already selected "${selectedCat}". Always return exactly "${selectedCat}" as the category.`
+    : `For "category" — carefully read the product description and pick the MOST specific match from this list:
+Appliances (washing machines, fridges, ACs, fans, irons, ovens, microwaves)
+Phones & Accessories (mobile phones, chargers, cables, cases, earphones, power banks)
+Islamic Products (prayer mats, tasbeeh, quran, oud, attar, zamzam, hijab, thobes)
+Electronics (TVs, laptops, tablets, cameras, routers, smart devices — NOT phones)
+Home & Kitchen (cookware, utensils, containers, cleaning tools, furniture, curtains, bedding)
+Tools & Equipment (drills, hammers, ladders, measuring tools, industrial equipment)
+Personal Care (shavers, hair dryers, skin care, oral care, perfumes — NOT Islamic attars)
+Clothing & Fashion (shoes, bags, belts, watches, non-Islamic clothing)
+Food & Grocery (food items, beverages, supplements, spices)
+Other (anything that clearly does not fit above)
+Be specific — do NOT default to Electronics unless the product is clearly an electronic device.`;
+
   const systemPrompt = `You are a product description formatter for Q-Mart, Doha, Qatar.
 
 Return a JSON object with exactly two keys:
@@ -828,8 +856,7 @@ For "desc":
 - Remove only emojis and bullet symbols (✅ ✔ • ▪ etc.)
 - Use ONLY | as separator
 
-For "category" — pick one:
-Appliances | Phones & Accessories | Islamic Products | Electronics | Home & Kitchen | Tools & Equipment | Personal Care | Clothing & Fashion | Food & Grocery | Other
+${categoryInstruction}
 
 Return ONLY raw JSON, no markdown, no backticks.
 Example: {"desc":"Full text here","category":"Appliances"}`;
@@ -862,8 +889,31 @@ Example: {"desc":"Full text here","category":"Appliances"}`;
     formattedDesc = parsed.desc || '';
     suggestedCategory = parsed.category || '';
     document.getElementById('resultText').textContent = formattedDesc;
-    document.getElementById('categoryText').textContent = suggestedCategory;
-    document.getElementById('descResult').style.display = 'block';
+
+    // If category already selected, hide the suggested category section
+    if (selectedCat && selectedCat !== '__custom__') {
+      document.getElementById('descResult').style.display = 'block';
+      document.querySelector('#descResult .divider').style.display = 'none';
+      document.querySelector('#descResult .result-label:last-of-type') && null;
+      document.getElementById('categoryText').closest('div.result-label') && null;
+      // hide everything after the divider
+      const divider = document.querySelector('#descResult hr.divider');
+      if (divider) {
+        let el = divider.nextSibling;
+        while (el) { if (el.style) el.style.display = 'none'; el = el.nextSibling; }
+        divider.style.display = 'none';
+      }
+    } else {
+      // show suggested category section
+      const divider = document.querySelector('#descResult hr.divider');
+      if (divider) {
+        divider.style.display = '';
+        let el = divider.nextSibling;
+        while (el) { if (el.style) el.style.display = ''; el = el.nextSibling; }
+      }
+      document.getElementById('categoryText').textContent = suggestedCategory;
+      document.getElementById('descResult').style.display = 'block';
+    }
   } catch(err) {
     showDescError('Error: ' + err.message);
   } finally {
@@ -949,6 +999,7 @@ function showImgError(msg) {
 // load GIS library
 const gisScript = document.createElement('script');
 gisScript.src = 'https://accounts.google.com/gsi/client';
+gisScript.onload = () => tryRestoreToken();
 document.head.appendChild(gisScript);
 </script>
 </body>
