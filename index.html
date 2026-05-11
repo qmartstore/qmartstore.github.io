@@ -674,7 +674,7 @@ function updateCartUI(){
 function renderCart(){
   const el=document.getElementById("cartItems");
   if(!cart.length){el.innerHTML='<div class="cart-empty"><div class="cart-empty-icon">🛒</div><p>Your cart is empty</p></div>';return;}
-  el.innerHTML=cart.map(i=>`<div class="cart-item"><div class="cart-item-img">${i.emoji}</div><div class="cart-item-info"><div class="cart-item-name">${i.name}</div><div class="cart-item-price">QAR ${(i.price*i.qty).toLocaleString()}</div><div class="cart-item-qty"><button class="qty-btn" onclick="changeQty(${i.id},-1)">−</button><span class="qty-val">${i.qty}</span><button class="qty-btn" onclick="changeQty(${i.id},1)">+</button></div></div><button class="remove-btn" onclick="removeFromCart(${i.id})">×</button></div>`).join("");
+  el.innerHTML=cart.map(i=>`<div class="cart-item"><div class="cart-item-img">${getImageHTML(i)}</div><div class="cart-item-info"><div class="cart-item-name">${i.name}</div><div class="cart-item-price">QAR ${(i.price*i.qty).toLocaleString()}</div><div class="cart-item-qty"><button class="qty-btn" onclick="changeQty(${i.id},-1)">−</button><span class="qty-val">${i.qty}</span><button class="qty-btn" onclick="changeQty(${i.id},1)">+</button></div></div><button class="remove-btn" onclick="removeFromCart(${i.id})">×</button></div>`).join("");
 }
 function openCart(){renderCart();document.getElementById("cartOverlay").classList.add("open");document.getElementById("cartDrawer").classList.add("open");document.body.style.overflow="hidden";}
 function closeCart(){document.getElementById("cartOverlay").classList.remove("open");document.getElementById("cartDrawer").classList.remove("open");document.body.style.overflow="";}
