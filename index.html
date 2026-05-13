@@ -586,11 +586,9 @@ async function placeOrder() {
   btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">⏳</span> Placing order...`;
 
   try {
-    const formData = new FormData();
-    formData.append("data", JSON.stringify({ name, phone, email, address, notes, items }));
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      body: formData
+    const payload = encodeURIComponent(JSON.stringify({ name, phone, email, address, notes, items }));
+    const response = await fetch(APPS_SCRIPT_URL + "?data=" + payload, {
+      method: "GET"
     });
 
     if (!response.ok) throw new Error("Server error: " + response.status);
