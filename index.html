@@ -131,17 +131,12 @@
 <!-- PRODUCT DETAIL PAGE (Full Screen Slide-in) -->
 <div class="pv-page" id="pvPage" role="dialog" aria-label="Product details" aria-modal="true">
   <div class="pv-header">
-  <button class="pv-back" onclick="closePV()">
-    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    Back
-  </button>
-  <span class="pv-header-title" id="pvHeaderTitle"></span>
-  <button class="cart-btn" onclick="closePV();openCart()" style="margin-left:auto;">
-    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-    <span class="cart-label">Cart</span>
-    <span class="cart-count hidden" id="pvCartCount">0</span>
-  </button>
-</div>
+    <button class="pv-back" onclick="closePV()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Back
+    </button>
+    <span class="pv-header-title" id="pvHeaderTitle"></span>
+  </div>
   <div class="pv-inner">
     <div class="pv-slider">
       <div class="pv-main-img" id="pvMainImg"></div>
@@ -461,11 +456,6 @@ function getCount() { return cart.reduce((s, i) => s + i.qty, 0); }
 function updateCartUI() {
   const n = getCount(), el = document.getElementById("cartCount");
   if (n > 0) { el.textContent = n; el.classList.remove("hidden"); } else el.classList.add("hidden");
-const pvCount = document.getElementById("pvCartCount");
-  if (pvCount) {
-    if (n > 0) { pvCount.textContent = n; pvCount.classList.remove("hidden"); }
-    else pvCount.classList.add("hidden");
-  }
   // Show estimated total in cart drawer (display only — not used for payment)
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
   document.getElementById("cartTotal").textContent = total.toLocaleString();
@@ -586,12 +576,11 @@ async function placeOrder() {
   btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">⏳</span> Placing order...`;
 
   try {
-    const formData = new FormData();
-formData.append("data", JSON.stringify({ name, phone, email, address, notes, items }));
-const response = await fetch(APPS_SCRIPT_URL, {
-  method: "POST",
-  body: formData
-});
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, phone, email, address, notes, items })
+    });
 
     if (!response.ok) throw new Error("Server error: " + response.status);
 
@@ -607,7 +596,7 @@ const response = await fetch(APPS_SCRIPT_URL, {
     updateCartUI();
     saveCart();
 
-    // WhatsApp message — ONLY the Order ID, no prices or item details
+    // WhatsApp message — Order ID only
     const waMsg = `Hello, I have placed an order. My Order ID is ${orderId}`;
     const waUrl = "https://wa.me/" + WA_NUMBER + "?text=" + encodeURIComponent(waMsg);
 
